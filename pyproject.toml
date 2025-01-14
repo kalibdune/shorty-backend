@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "shorty"
+version = "0.1.0"
+description = "url shortener"
+authors = ["dmitry <kalibdune@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "0.115.6"
+dependency-injection = "1.2.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "4.0.1"
+pytest = "8.3.4"
+pytest-cov = "6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
