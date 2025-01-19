@@ -4,7 +4,6 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from shorty.config import config
 from shorty.endpoints import routers
 from shorty.utils.exceptions import BaseAPIException
 
