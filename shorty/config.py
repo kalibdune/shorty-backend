@@ -1,16 +1,18 @@
-from os import getenv
+import argparse
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings as _BaseSettings
 from pydantic_settings import SettingsConfigDict
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--env", type=str, default="prod", nargs="?")
+args = parser.parse_args()
+
 
 class BaseConfig(_BaseSettings):
-    env: str = getenv("ENV", "prod")
-
     model_config = SettingsConfigDict(
         extra="ignore",
-        env_file=".env" if env == "prod" else f".env.{env}",
+        env_file=".env" if args.env == "prod" else f".env.{args.env}",
         env_file_encoding="utf-8",
     )
 
