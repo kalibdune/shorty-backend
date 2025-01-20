@@ -1,4 +1,20 @@
 services:
+
+  backend:
+    container_name: shorty_fastapi
+    build:
+      context: .
+    command: sh -c "alembic upgrade head && python -m shorty"
+    restart: always
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - shorty_db_network
+
   db:
     container_name: shorty_db
     image: postgres:16
