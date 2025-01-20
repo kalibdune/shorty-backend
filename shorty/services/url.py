@@ -1,8 +1,9 @@
 import random
 import string
 from datetime import datetime
+from uuid import UUID
 
-from shorty.db.schemas.url import UrlCreateSchema, UrlInDB, UrlSchema
+from shorty.db.schemas.url import UrlCreateSchema, UrlInDB, UrlSchema, UrlUpdateSchema
 from shorty.repositories.url import UrlRepository
 from shorty.utils.exceptions import GoneError, NotFoundError
 
@@ -18,11 +19,32 @@ class UrlService:
         random_hash = "".join(random.choices(characters, k=length))
         return random_hash
 
+    async def get_url_by_id(self, url_id) -> UrlSchema:
+        url = await self._repository.get_by_id(url_id)
+        if not url:
+            raise NotFoundError(f"url not found by id: {url_id}")
+        return UrlSchema.model_validate(url, from_attributes=True)
+
+    async def update_url_by_id(
+        self, url_id: UUID, new_url: UrlUpdateSchema
+    ) -> UrlSchema:
+        url = await self.get_url_by_id(url_id)
+        updated_url = url.model_copy(update=new_url.model_dump(exclude_unset=True))
+        updated_url = UrlInDB.model_validate(updated_url, from_attributes=True)
+        return await self._repository.update_by_id(url_id, updated_url.model_dump())
+
     async def create_url(self, url: UrlCreateSchema) -> UrlSchema:
         url_hash = self.generate_random_hash()
 
-        while await self._repository.get_url_by_hash(url_hash):
+        exisiting_url = await self._repository.get_url_by_hash(url_hash)
+
+        while exisiting_url:
+            if exisiting_url.expired_at <= datetime.now():
+                updated_url = UrlUpdateSchema.model_validate(url, from_attributes=True)
+                updated_url.expired_at = url.expiration_time + datetime.now()
+                return await self.update_url_by_id(exisiting_url.id, updated_url)
             url_hash = self.generate_random_hash()
+            exisiting_url = await self._repository.get_url_by_hash(url_hash)
 
         url = UrlInDB(
             url=url.url, hash=url_hash, expired_at=url.expiration_time + datetime.now()
@@ -36,5 +58,7 @@ class UrlService:
         if not url:
             raise NotFoundError(f"url not found by hash: {hash}")
         if url.expired_at <= datetime.now():
-            raise GoneError(f"hash has been expired, id: {url.id}, hash: {url.hash}")
+            raise GoneError(
+                f"url hash has been expired, id: {url.id}, hash: {url.hash}"
+            )
         return UrlSchema.model_validate(url, from_attributes=True)

@@ -1,8 +1,13 @@
 import argparse
+import os
+import time
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings as _BaseSettings
 from pydantic_settings import SettingsConfigDict
+
+os.environ["TZ"] = "UTC"
+time.tzset()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--env", type=str, default="prod", nargs="?")

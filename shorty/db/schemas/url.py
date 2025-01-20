@@ -15,6 +15,8 @@ class UrlInDB(UrlBaseSchema): ...
 
 class UrlSchema(UrlBaseSchema):
     id: UUID
+    created_at: datetime
+    updated_at: datetime
 
 
 class UrlCreateSchema(BaseModel):
@@ -26,3 +28,9 @@ class UrlCreateSchema(BaseModel):
         if isinstance(value, int):
             return timedelta(seconds=value)
         return value
+
+
+class UrlUpdateSchema(BaseModel):
+    url: AnyUrl | None = None
+    hash: str | None = None
+    expired_at: datetime | None = None
