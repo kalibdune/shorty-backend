@@ -21,7 +21,7 @@ async def create_short_url(
     return await url_service.create_url(data)
 
 
-@router.get("/{hash}", response_model=UrlSchema, status_code=status.HTTP_201_CREATED)
+@router.get("/{hash}", response_model=UrlSchema, status_code=status.HTTP_200_OK)
 async def get_hash_url(
     hash: Annotated[str, Path(pattern=r"^[A-Z]{5,5}$", max_length=5)],
     url_service: UrlService = Depends(Container.get_url_service),
