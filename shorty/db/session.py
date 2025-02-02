@@ -4,7 +4,8 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session
+
+from shorty.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -37,3 +38,6 @@ class SessionManager:
             raise
         finally:
             await session.close()
+
+
+session_manager = SessionManager(config.postgres.get_dsn, config.postgres.debug)

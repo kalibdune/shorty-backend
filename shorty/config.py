@@ -23,6 +23,7 @@ class PostgresConfig(BaseConfig, env_prefix="DB_"):
     password: SecretStr
     name: str
     port: int
+    debug: bool
 
     @property
     def get_dsn(self) -> str:

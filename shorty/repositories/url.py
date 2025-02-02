@@ -11,12 +11,9 @@ from shorty.repositories.base import SQLAlchemyRepository
 class UrlRepository(SQLAlchemyRepository):
     model = Url
 
-    def __init__(
-        self, session_factory: Callable[..., AbstractContextManager[AsyncSession]]
-    ) -> None:
-        super().__init__(session_factory)
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(session)
 
     async def get_url_by_hash(self, hash: str) -> Url | None:
-        async with self._session_factory() as session:
-            stmt = select(self.model).where(self.model.hash == hash)
-            return await session.scalar(stmt)
+        stmt = select(self.model).where(self.model.hash == hash)
+        return await self._session.scalar(stmt)

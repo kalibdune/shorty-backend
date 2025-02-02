@@ -3,6 +3,8 @@ import string
 from datetime import datetime
 from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from shorty.db.schemas.url import UrlCreateSchema, UrlInDB, UrlSchema, UrlUpdateSchema
 from shorty.repositories.url import UrlRepository
 from shorty.utils.exceptions import GoneError, NotFoundError
@@ -10,8 +12,9 @@ from shorty.utils.exceptions import GoneError, NotFoundError
 
 class UrlService:
 
-    def __init__(self, url_repository: UrlRepository):
-        self._repository: UrlRepository = url_repository
+    def __init__(self, session: AsyncSession):
+        self._session = session
+        self._repository = UrlRepository(session)
 
     @staticmethod
     def generate_random_hash(length: int = 5) -> str:
