@@ -13,6 +13,8 @@ pydantic-settings = "2.7.1"
 asyncpg = "^0.30.0"
 alembic = "^1.14.0"
 sqlalchemy = "^2.0.37"
+pytest = "^8.3.4"
+pytest-asyncio = "^0.25.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -21,6 +23,7 @@ pytest = "8.3.4"
 pytest-cov = "6.0.0"
 flake8 = "^7.1.1"
 isort = "^5.13.2"
+pytest-asyncio = "^0.25.3"
 
 [build-system]
 requires = ["poetry-core"]

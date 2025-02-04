@@ -24,7 +24,7 @@ endif
 APPLICATION_NAME = shorty
 APPLICATION_HOST = 127.0.0.1
 APPLICATION_PORT = 8000
-TEST = poetry run python -m pytest --verbosity=2 --showlocals --log-level=DEBUG
+TEST = poetry run python -m pytest --log-level=debug --showlocals --verbose
 CODE = $(APPLICATION_NAME) tests
 
 HELP_FUN = \
@@ -46,13 +46,13 @@ docker_env:  ##@Environment Create .env file with variables
 		echo ".env.docker not found"; \
 	fi
 
-docker_env_generate:
+test_env:
 	@$(eval SHELL:=/bin/bash)
-	@echo "DB_HOST=db" > .env.docker
-	@echo "DB_USER=admin" >> .env.docker
-	@echo "DB_PASSWORD=admin_password" >> .env.docker
-	@echo "DB_NAME=shorty" >> .env.docker
-	@echo "DB_PORT=5432" >> .env.docker
+	@if [ -e .env.test ]; then \
+		cp .env.test .env; \
+	else \
+		echo ".env.test not found"; \
+	fi
 
 help: ##@Help Show this help
 	@echo -e "Usage: make [target] ...\n"
@@ -69,7 +69,11 @@ revision:  ##@Database Create new revision file automatically with prefix (ex. 2
 	alembic revision --autogenerate
 
 test:  ##@Testing Test application with pytest
+	make test_env
+	docker run --name test_postgres -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin_password -e POSTGRES_DB=test -p 5433:5432 -d postgres:16
 	$(TEST)
+	docker stop test_postgres
+	docker rm test_postgres
 
 test-cov:  ##@Testing Test application with pytest and create coverage report
 	make db && $(TEST) --cov=$(APPLICATION_NAME) --cov-report html --cov-fail-under=70

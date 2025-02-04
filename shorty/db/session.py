@@ -3,24 +3,21 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
 
 from shorty.config import config
 
 logger = logging.getLogger(__name__)
 
-Base = declarative_base()
-
 
 class SessionManager:
 
     def __init__(self, db_dsn: str, echo: bool = False):
-        self.engine = create_async_engine(
+        self._engine = create_async_engine(
             url=db_dsn,
             echo=echo,
         )
         self._session_factory = async_sessionmaker(
-            self.engine,
+            self._engine,
             autoflush=False,
             autocommit=False,
             expire_on_commit=False,
