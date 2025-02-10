@@ -1,6 +1,5 @@
 from abc import ABC
-from contextlib import AbstractContextManager
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 from uuid import UUID
 
 from sqlalchemy import delete, insert, select, update

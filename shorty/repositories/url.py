@@ -1,6 +1,3 @@
-from contextlib import AbstractContextManager
-from typing import Callable
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
