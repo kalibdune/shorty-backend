@@ -15,6 +15,9 @@ alembic = "^1.14.0"
 sqlalchemy = "^2.0.37"
 pytest = "^8.3.4"
 pytest-asyncio = "^0.25.3"
+factory-boy = "^3.3.3"
+freezegun = "^1.5.1"
+psycopg = {extras = ["binary"], version = "^3.2.4"}
 
 
 [tool.poetry.group.dev.dependencies]
