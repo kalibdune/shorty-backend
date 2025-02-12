@@ -16,7 +16,7 @@ class Url(Base, TimeStampMixin):
     expired_at: Mapped[datetime] = mapped_column(nullable=False)
 
     def __repr__(self) -> str:
-        return f"""Url(id={self.id}, short_id={self.hash}, epired_at={self.expired_at}, created_at={self.created_at}, id={self.id})"""
+        return f"""Url(id={self.id}, url={self.url}, hash={self.hash}, expired_at={self.expired_at}, created_at={self.created_at}, id={self.id})"""
 
     class Config:
         orm_mode = True

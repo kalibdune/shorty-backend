@@ -29,6 +29,10 @@ class PostgresConfig(BaseConfig, env_prefix="DB_"):
     def get_dsn(self) -> str:
         return f"postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
 
+    @property
+    def get_dsn_psycopg(self) -> str:
+        return f"postgresql+psycopg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
+
 
 class Config(BaseConfig):
     postgres: PostgresConfig
