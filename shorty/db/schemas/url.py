@@ -3,10 +3,12 @@ from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Field, field_validator
 
+from shorty.config import config
+
 
 class UrlBaseSchema(BaseModel):
     url: AnyUrl
-    hash: str = Field(max_length=5)
+    hash: str = Field(max_length=config.app.hash_len)
     expired_at: datetime
 
 
@@ -21,7 +23,7 @@ class UrlSchema(UrlBaseSchema):
 
 class UrlCreateSchema(BaseModel):
     url: AnyUrl
-    expiration_time: int = Field(description="short url life duration in seconds")
+    expiration_time: int = Field(ge=0, description="short url life duration in seconds")
 
     @field_validator("expiration_time")
     def parse_expiration_time(cls, value):

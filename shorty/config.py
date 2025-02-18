@@ -17,6 +17,11 @@ class BaseConfig(_BaseSettings):
     )
 
 
+class APPConfig(BaseConfig, env_prefix="APP_"):
+    alphabet_count: int
+    hash_len: int
+
+
 class PostgresConfig(BaseConfig, env_prefix="DB_"):
     host: str
     user: str
@@ -35,7 +40,8 @@ class PostgresConfig(BaseConfig, env_prefix="DB_"):
 
 
 class Config(BaseConfig):
+    app: APPConfig
     postgres: PostgresConfig
 
 
-config = Config(postgres=PostgresConfig())
+config = Config(postgres=PostgresConfig(), app=APPConfig())
