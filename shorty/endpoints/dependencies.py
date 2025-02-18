@@ -14,5 +14,5 @@ async def get_session():
 
 
 HashType = Annotated[
-    str, Path(pattern=rf"^[A-Z]{hash_len,hash_len}$", max_length=hash_len)
+    str, Path(regex=r"^[A-Z]{{{0}}}$".format(hash_len), max_length=hash_len)
 ]
