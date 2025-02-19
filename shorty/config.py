@@ -21,6 +21,10 @@ class APPConfig(BaseConfig, env_prefix="APP_"):
     alphabet_count: int
     hash_len: int
 
+    @property
+    def get_combinations_count(self):
+        return self.alphabet_count**self.hash_len
+
 
 class PostgresConfig(BaseConfig, env_prefix="DB_"):
     host: str

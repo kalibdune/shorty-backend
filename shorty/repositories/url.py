@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shorty.db.models.url import Url
@@ -14,3 +14,12 @@ class UrlRepository(SQLAlchemyRepository):
     async def get_url_by_hash(self, hash: str) -> Url | None:
         stmt = select(self.model).where(self.model.hash == hash)
         return await self._session.scalar(stmt)
+
+    async def get_reserved_count(self) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(self.model)
+            .where(self.model.expired_at > func.now())
+        )
+        result = await self._session.scalar(stmt)
+        return result

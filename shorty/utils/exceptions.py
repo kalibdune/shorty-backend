@@ -45,3 +45,8 @@ class UnAvailableError(BaseAPIException):
 class BadRequestError(BaseAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     error = "bad request"
+
+
+class InsufficientStorage(BaseAPIException):
+    status_code = status.HTTP_507_INSUFFICIENT_STORAGE
+    error = "insufficient storage"
