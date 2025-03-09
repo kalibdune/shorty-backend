@@ -47,10 +47,11 @@ class SessionManager:
         session: AsyncSession = self._session_factory()
         try:
             yield session
-        except Exception:
-            logger.exception("Session rollback because of exception")
+        except Exception as e:
+            logger.debug("Session rollback because of exception")
             await session.rollback()
-            raise
+            raise e
+
         finally:
             await session.close()
 
@@ -61,10 +62,10 @@ class SessionManager:
         session = self._session_factory()
         try:
             yield session
-        except Exception:
-            logger.exception("Session rollback because of exception")
+        except Exception as e:
+            logger.debug("Session rollback because of exception")
             session.rollback()
-            raise
+            raise e
         finally:
             session.close()
 

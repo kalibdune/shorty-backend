@@ -1,12 +1,14 @@
 import os
 import time
 
+from passlib.context import CryptContext
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings as _BaseSettings
 from pydantic_settings import SettingsConfigDict
 
 os.environ["TZ"] = "UTC"
 time.tzset()
+crypto_context = CryptContext(schemes=["argon2"])
 
 
 class BaseConfig(_BaseSettings):

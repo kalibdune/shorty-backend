@@ -12,12 +12,15 @@ uvicorn = "0.34.0"
 pydantic-settings = "2.7.1"
 asyncpg = "^0.30.0"
 alembic = "^1.14.0"
-sqlalchemy = "^2.0.37"
 pytest = "^8.3.4"
 pytest-asyncio = "^0.25.3"
 factory-boy = "^3.3.3"
 freezegun = "^1.5.1"
-psycopg = {extras = ["binary"], version = "^3.2.4"}
+psycopg = { extras = ["binary"], version = "^3.2.4" }
+pyjwt = "^2.10.1"
+pydantic = { extras = ["email"], version = "^2.10.6" }
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.38" }
+passlib = {extras = ["argon2"], version = "^1.7.4"}
 
 
 [tool.poetry.group.dev.dependencies]
