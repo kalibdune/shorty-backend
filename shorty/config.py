@@ -1,14 +1,13 @@
 import os
 import time
+from typing import Literal
 
-from passlib.context import CryptContext
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings as _BaseSettings
 from pydantic_settings import SettingsConfigDict
 
 os.environ["TZ"] = "UTC"
 time.tzset()
-crypto_context = CryptContext(schemes=["argon2"])
 
 
 class BaseConfig(_BaseSettings):
@@ -22,6 +21,10 @@ class BaseConfig(_BaseSettings):
 class APPConfig(BaseConfig, env_prefix="APP_"):
     alphabet_count: int
     hash_len: int
+    encrypt_type: Literal["argon2"]
+    hash_algorithm: str
+    secret_key: str
+    token_expire: int
 
     @property
     def get_combinations_count(self):

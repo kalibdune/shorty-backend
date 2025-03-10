@@ -3,9 +3,9 @@ from uuid import UUID
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shorty.config import crypto_context
 from shorty.db.schemas.user import UserCreateSchema, UserSchema, UserUpdateSchema
 from shorty.repositories.user import UserRepository
+from shorty.services.auth import AuthService
 from shorty.utils.exceptions import AlreadyExistError, NotFoundError
 
 
@@ -31,7 +31,8 @@ class UserService:
         db_user = await self._repository.get_by_email(str(user.email))
         if db_user:
             raise AlreadyExistError(f"user already exist. user_id: {db_user.id}")
-        user.password = crypto_context.hash(user.password)
+        auth_service = AuthService()
+        user.password = auth_service.get_hash_password(user.password)
         user = await self._repository.create(user.model_dump())
 
         return UserSchema.model_validate(user, from_attributes=True)

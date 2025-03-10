@@ -50,3 +50,8 @@ class BadRequestError(BaseAPIException):
 class InsufficientStorage(BaseAPIException):
     status_code = status.HTTP_507_INSUFFICIENT_STORAGE
     error = "insufficient storage"
+
+
+class UnauthorizedError(BaseAPIException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    error = "unauthorized"

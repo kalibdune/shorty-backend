@@ -21,6 +21,7 @@ pyjwt = "^2.10.1"
 pydantic = { extras = ["email"], version = "^2.10.6" }
 sqlalchemy = { extras = ["asyncio"], version = "^2.0.38" }
 passlib = {extras = ["argon2"], version = "^1.7.4"}
+python-multipart = "^0.0.20"
 
 
 [tool.poetry.group.dev.dependencies]
