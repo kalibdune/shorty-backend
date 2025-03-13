@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 
 from shorty.db.schemas.user import UserCreateSchema, UserSchema, UserUpdateSchema
 from shorty.endpoints.dependencies import OAuth, get_session
@@ -14,9 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
-async def create_user(data: UserCreateSchema, session=Depends(get_session)):
+async def create_user(
+    data: UserCreateSchema, response: Response, session=Depends(get_session)
+):
     user_service = UserService(session)
-    return await user_service.create_user(data)
+    return await user_service.create_user(data, response)
 
 
 @router.get("/{id}", response_model=UserSchema, status_code=status.HTTP_200_OK)

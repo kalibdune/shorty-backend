@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,20 +11,17 @@ if TYPE_CHECKING:
     from shorty.db.models.user import User
 
 
-class Url(Base, TimeStampMixin):
-    __tablename__ = "url"
+class Auth(Base, TimeStampMixin):
+    __tablename__ = "auth"
 
-    url: Mapped[str] = mapped_column(nullable=False)
-    hash: Mapped[str] = mapped_column(
-        String(length=5), nullable=False, unique=True, index=True
-    )
+    refresh_token: Mapped[str] = mapped_column(nullable=False)
+    revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
     expired_at: Mapped[datetime] = mapped_column(nullable=False)
-
     user_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("usr.id"))
 
     user: Mapped["User"] = relationship(
-        "User",
-        back_populates="urls",
+        "Usr",
+        back_populates="auths",
     )
 
     def __repr__(self) -> str:
@@ -33,7 +30,7 @@ class Url(Base, TimeStampMixin):
             for key, value in self.__dict__.items()
             if not key.startswith("_")
         )
-        return f"Url({attrs})"
+        return f"Auth({attrs})"
 
     class Config:
         orm_mode = True

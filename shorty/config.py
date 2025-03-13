@@ -24,7 +24,8 @@ class APPConfig(BaseConfig, env_prefix="APP_"):
     encrypt_type: Literal["argon2"]
     hash_algorithm: str
     secret_key: str
-    token_expire: int
+    access_token_expire: int
+    refresh_token_expire: int
 
     @property
     def get_combinations_count(self):

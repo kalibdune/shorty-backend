@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shorty.config import config
 from shorty.db.schemas.auth import TokenSchema
 from shorty.repositories.user import UserRepository
+from shorty.utils.enums import TokenType
 from shorty.utils.exceptions import NotFoundError, UnauthorizedError
 from shorty.utils.singleton import SingletonMeta
 
@@ -18,17 +19,25 @@ class AuthService(metaclass=SingletonMeta):
             schemes=[config.app.encrypt_type], deprecated="auto"
         )
 
-    def emit_new_token(self, username: str) -> str:
+    def emit_new_token(self, username: str, token_type: TokenType) -> str:
+        if token_type == TokenType.access:
+            exp = datetime.now() + timedelta(seconds=config.app.access_token_expire)
+        elif token_type == TokenType.refresh:
+            exp = datetime.now() + timedelta(seconds=config.app.refresh_token_expire)
+        else:
+            raise Exception("Uknown TokenType")
+
         data = {
             "sub": username,
-            "exp": datetime.now() + timedelta(seconds=config.app.token_expire),
+            "exp": exp,
+            "type": token_type,
         }
         encoded_jwt = jwt.encode(
             data, config.app.secret_key, algorithm=config.app.hash_algorithm
         )
         return encoded_jwt
 
-    async def create_token(
+    async def create_tokens(
         self, session: AsyncSession, username: str, password: str
     ) -> TokenSchema:
         user_repository = UserRepository(session)
@@ -40,18 +49,23 @@ class AuthService(metaclass=SingletonMeta):
         if not self.verify_password(password, user.password):
             raise UnauthorizedError(f"incorrect password: {password}")
 
-        token = self.emit_new_token(username)
+        access_token = self.emit_new_token(username, TokenType.access.value)
+        refresh_token = self.emit_new_token(username, TokenType.refresh.value)
 
-        return TokenSchema(access_token=token, token_type="Bearer")
+        return TokenSchema(access_token=access_token, refresh_token=refresh_token)
 
-    def validate_token(self, token: str) -> bool:
+    def validate_token(self, token: str, token_type: TokenType) -> bool:
         try:
             payload = jwt.decode(
                 token, config.app.secret_key, algorithms=[config.app.hash_algorithm]
             )
             username = payload.get("sub")
+            token_scope = payload.get("type")
             if username is None:
                 raise UnauthorizedError("username not provided")
+            if token_scope != token_type:
+                raise UnauthorizedError("Incorrect token type")
+
         except jwt.InvalidTokenError:
             raise UnauthorizedError("invalid jwt token")
 
