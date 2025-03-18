@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shorty.db.schemas.user import UserCreateSchema, UserSchema, UserUpdateSchema
 from shorty.repositories.user import UserRepository
 from shorty.services.auth import AuthService
-from shorty.utils.enums import TokenType
 from shorty.utils.exceptions import AlreadyExistError, NotFoundError
 
 
@@ -35,16 +34,14 @@ class UserService:
         db_user = await self._repository.get_by_email(str(user.email))
         if db_user:
             raise AlreadyExistError(f"user already exist. email: {user.email}")
-        auth_service = AuthService()
+        auth_service = AuthService(self._session)
 
         user.password = auth_service.get_hash_password(user.password)
         user = await self._repository.create(user.model_dump())
         user = UserSchema.model_validate(user, from_attributes=True)
 
-        access_token = auth_service.emit_new_token(user.email, TokenType.access)
-        refresh_token = auth_service.emit_new_token(user.email, TokenType.refresh)
-
-        # write refresh token to table
+        access_token = auth_service.emit_access_token(user.name)
+        refresh_token = await auth_service.emit_refresh_token(user.name, user.id)
 
         response.set_cookie("access_token", access_token, httponly=True)
         response.set_cookie("refresh_token", refresh_token, httponly=True)

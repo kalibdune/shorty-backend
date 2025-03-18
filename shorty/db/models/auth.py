@@ -20,7 +20,7 @@ class Auth(Base, TimeStampMixin):
     user_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("usr.id"))
 
     user: Mapped["User"] = relationship(
-        "Usr",
+        "User",
         back_populates="auths",
     )
 
