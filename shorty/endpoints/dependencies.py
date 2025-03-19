@@ -23,7 +23,7 @@ async def get_session():
 
 async def check_auth(request: Request, session=Depends(get_session)) -> UserSchema:
     access_token = request.cookies.get("access_token")
-    return AuthService(session).validate_token(access_token, TokenType.access)
+    return await AuthService(session).validate_token(access_token, TokenType.access)
 
 
 OAuth = Annotated[UserSchema, Depends(check_auth)]

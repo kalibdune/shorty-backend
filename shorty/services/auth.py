@@ -9,8 +9,10 @@ from shorty.config import config
 from shorty.db.schemas.auth import (
     RefreshTokenCreateSchema,
     RefreshTokenSchema,
+    RevokedTokensSchema,
     TokensSchema,
 )
+from shorty.db.schemas.user import UserSchema
 from shorty.repositories.auth import AuthRepository
 from shorty.repositories.user import UserRepository
 from shorty.utils.enums import TokenType
@@ -50,6 +52,10 @@ class AuthService(metaclass=SingletonMeta):
         )
         return encoded_jwt
 
+    async def revoke_tokens_by_user_id(self, user: UserSchema) -> RevokedTokensSchema:
+        count = await self._repository.revoke_tokens_by_user_id(user.id)
+        return RevokedTokensSchema(revoked_count=count)
+
     def emit_access_token(self, username: str) -> str:
         return self._emit_new_token(username, TokenType.access.value)
 
@@ -82,7 +88,8 @@ class AuthService(metaclass=SingletonMeta):
         if not refresh_token:
             raise NotFoundError("token not found in cookies")
 
-        self.validate_token(refresh_token, TokenType.refresh)
+        await self.validate_token(refresh_token, TokenType.refresh)
+        await self.get_token_object_by_token(refresh_token)
 
         data = await self.get_token_object_by_token(refresh_token)
 
@@ -108,7 +115,9 @@ class AuthService(metaclass=SingletonMeta):
 
         return TokensSchema(access_token=access_token, refresh_token=refresh_token)
 
-    def validate_token(self, token: str | None, token_type: TokenType) -> bool:
+    async def validate_token(
+        self, token: str | None, token_type: TokenType
+    ) -> UserSchema:
         if not token:
             raise UnauthorizedError("token not provided")
         try:
@@ -125,7 +134,11 @@ class AuthService(metaclass=SingletonMeta):
         except jwt.InvalidTokenError:
             raise UnauthorizedError("invalid jwt token")
 
-        return True
+        user_repository = UserRepository(self._session)
+        user = await user_repository.get_by_email(username)
+        if not user:
+            raise NotFoundError(f"user not found with email: {username}")
+        return UserSchema.model_validate(user, from_attributes=True)
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self._context.verify(plain_password, hashed_password)

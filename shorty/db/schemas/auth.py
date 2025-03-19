@@ -30,3 +30,7 @@ class RefreshTokenCreateSchema(RefreshTokenBase):
     expired_at: datetime
     refresh_token: str
     user_id: UUID
+
+
+class RevokedTokensSchema(BaseModel):
+    revoked_count: int
