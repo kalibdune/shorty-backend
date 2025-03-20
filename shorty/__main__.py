@@ -9,7 +9,7 @@ from shorty.utils.exceptions import BaseAPIException
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(title="Shorty")
 
 app.include_router(routers)
 

@@ -18,9 +18,11 @@ class Url(Base, TimeStampMixin):
     hash: Mapped[str] = mapped_column(
         String(length=5), nullable=False, unique=True, index=True
     )
-    expired_at: Mapped[datetime] = mapped_column(nullable=False)
+    expired_at: Mapped[datetime] = mapped_column(nullable=True)
 
-    user_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("usr.id"))
+    user_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usr.id"), nullable=True
+    )
 
     user: Mapped["User"] = relationship(
         "User",

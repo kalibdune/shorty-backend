@@ -14,9 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=UrlSchema, status_code=status.HTTP_201_CREATED)
-async def create_short_url(
-    data: UrlCreateSchema, auth: OAuth, session=Depends(get_session)
-):
+async def create_short_url(data: UrlCreateSchema, session=Depends(get_session)):
     url_service = UrlService(session)
     return await url_service.create_url(data)
 

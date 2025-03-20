@@ -21,6 +21,7 @@ class BaseConfig(_BaseSettings):
 class APPConfig(BaseConfig, env_prefix="APP_"):
     alphabet_count: int
     hash_len: int
+    temporary_url_lifetime: int
     encrypt_type: Literal["argon2"]
     hash_algorithm: str
     secret_key: str
