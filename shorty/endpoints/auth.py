@@ -33,7 +33,7 @@ async def login_for_access_token(
     )
 
 
-@router.post("/refresh", status_code=status.HTTP_201_CREATED)
+@router.post("/refresh/", status_code=status.HTTP_201_CREATED)
 async def refresh_tokens(
     response: Response,
     request: Request,
@@ -48,7 +48,7 @@ async def refresh_tokens(
 
 
 @router.post(
-    "/revoke", response_model=RevokedTokensSchema, status_code=status.HTTP_201_CREATED
+    "/revoke/", response_model=RevokedTokensSchema, status_code=status.HTTP_201_CREATED
 )
 async def revoke_tokens(user: OAuth, session=Depends(get_session)):
     auth_service = AuthService(session)

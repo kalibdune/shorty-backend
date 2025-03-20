@@ -21,13 +21,13 @@ async def create_user(
     return await user_service.create_user(data, response)
 
 
-@router.get("/{id}", response_model=UserSchema, status_code=status.HTTP_200_OK)
+@router.get("/{id}/", response_model=UserSchema, status_code=status.HTTP_200_OK)
 async def get_user_by_id(id: UUID, auth: OAuth, session=Depends(get_session)):
     user_service = UserService(session)
     return await user_service.get_user_by_id(id)
 
 
-@router.patch("/{id}", response_model=UserSchema, status_code=status.HTTP_200_OK)
+@router.patch("/{id}/", response_model=UserSchema, status_code=status.HTTP_200_OK)
 async def update_user(
     data: UserUpdateSchema, auth: OAuth, id: UUID, session=Depends(get_session)
 ):

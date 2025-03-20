@@ -27,16 +27,13 @@ class UrlService:
         self._repository = UrlRepository(session)
 
     @staticmethod
-    def generate_random_hash(length: int = config.app.hash_len) -> str:
+    def _generate_random_hash(length: int = config.app.hash_len) -> str:
         characters = string.ascii_letters.upper()
         random_hash = "".join(random.choices(characters, k=length))
         return random_hash
 
     async def _generate_available_hash(self) -> AvailableHashDTO:
-        """method generates available hash. It means that hash could be expired by time and absolutely unique\n
-        first returning parameter respond for unique of hash, second for hash"""
-
-        url_hash = self.generate_random_hash()
+        url_hash = self._generate_random_hash()
         exisiting_url = await self._repository.get_url_by_hash(url_hash)
 
         while exisiting_url:
@@ -44,7 +41,7 @@ class UrlService:
                 return AvailableHashDTO(
                     isunique=False, existing_url_id=exisiting_url.id, url_hash=url_hash
                 )
-            url_hash = self.generate_random_hash()
+            url_hash = self._generate_random_hash()
             exisiting_url = await self._repository.get_url_by_hash(url_hash)
 
         return AvailableHashDTO(isunique=True, url_hash=url_hash)
@@ -55,7 +52,18 @@ class UrlService:
             raise NotFoundError(f"url not found by id: {url_id}")
         return UrlSchema.model_validate(url, from_attributes=True)
 
-    async def get_reserved_url_count(self) -> int:
+    async def get_paginated_urls_by_user(
+        self, user_id: UUID, page: int, size: int
+    ) -> list[UrlSchema]:
+        user_service = UserService(self._session)
+        await user_service.get_user_by_id(user_id)
+
+        urls = await self._repository.get_paginated(user_id, page, size)
+        if urls:
+            return [UrlSchema.model_validate(url, from_attributes=True) for url in urls]
+        return []
+
+    async def _get_reserved_url_count(self) -> int:
         return await self._repository.get_reserved_count()
 
     async def update_url_by_id(
@@ -67,7 +75,7 @@ class UrlService:
         return await self._repository.update_by_id(url_id, updated_url.model_dump())
 
     async def create_url(self, url: UrlCreateSchema) -> UrlSchema:
-        if await self.get_reserved_url_count() >= config.app.get_combinations_count:
+        if await self._get_reserved_url_count() >= config.app.get_combinations_count:
             raise InsufficientStorage("cannot allocate new hash at this time")
 
         user_service = UserService(self._session)
@@ -78,7 +86,7 @@ class UrlService:
             exp = None
             await user_service.get_user_by_id(url.user_id)
         else:
-            exp = datetime.now() + timedelta(seconds=url.expiration_time)
+            exp = datetime.now() + url.expiration_time
             await user_service.get_user_by_id(url.user_id)
 
         hash_dto = await self._generate_available_hash()

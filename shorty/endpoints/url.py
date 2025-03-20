@@ -1,6 +1,7 @@
 import logging
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse
 
 from shorty.db.schemas.url import UrlCreateSchema, UrlSchema
@@ -19,7 +20,21 @@ async def create_short_url(data: UrlCreateSchema, session=Depends(get_session)):
     return await url_service.create_url(data)
 
 
-@router.get("/{hash}", response_model=UrlSchema, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{user_id}/", response_model=list[UrlSchema], status_code=status.HTTP_200_OK
+)
+async def get_urls_by_user(
+    user_id: UUID,
+    auth: OAuth,
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    session=Depends(get_session),
+):
+    url_service = UrlService(session)
+    return await url_service.get_paginated_urls_by_user(user_id, page, size)
+
+
+@router.get("/{hash}/", response_model=UrlSchema, status_code=status.HTTP_200_OK)
 async def get_hash_url(
     hash: HashType,
     auth: OAuth,
@@ -30,7 +45,7 @@ async def get_hash_url(
 
 
 @hash_router.get(
-    "/{hash}", response_model=UrlSchema, status_code=status.HTTP_307_TEMPORARY_REDIRECT
+    "/{hash}/", response_model=UrlSchema, status_code=status.HTTP_307_TEMPORARY_REDIRECT
 )
 async def redirect_on_url(
     hash: HashType,

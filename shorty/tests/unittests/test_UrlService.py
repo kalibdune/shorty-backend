@@ -21,7 +21,7 @@ class TestUrlService:
 
     def test_generate_random_hash(self, get_session):
         url_service = UrlService(get_session)
-        short = url_service.generate_random_hash(2)
+        short = url_service._generate_random_hash(2)
         assert len(short) == 2
         assert short.upper() == short
 
@@ -48,7 +48,7 @@ class TestUrlService:
         url_service = UrlService(get_session)
 
         with mock.patch.object(
-            url_service, "generate_random_hash"
+            url_service, "_generate_random_hash"
         ) as mock_generate_random_hash:
             mock_generate_random_hash.return_value = "A"
             with pytest.raises(InsufficientStorage):
