@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from fastapi import Response
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,9 +27,7 @@ class UserService:
             raise NotFoundError(f"email: {email}")
         return UserSchema.model_validate(user, from_attributes=True)
 
-    async def create_user(
-        self, user: UserCreateSchema, response: Response
-    ) -> UserSchema:
+    async def create_user(self, user: UserCreateSchema) -> UserSchema:
         db_user = await self._repository.get_by_email(str(user.email))
         if db_user:
             raise AlreadyExistError(f"user already exist. email: {user.email}")
@@ -38,15 +35,7 @@ class UserService:
 
         user.password = auth_service.get_hash_password(user.password)
         user = await self._repository.create(user.model_dump())
-        user = UserSchema.model_validate(user, from_attributes=True)
-
-        access_token = auth_service.emit_access_token(user.name)
-        refresh_token = await auth_service.emit_refresh_token(user.name, user.id)
-
-        response.set_cookie("access_token", access_token, httponly=True)
-        response.set_cookie("refresh_token", refresh_token, httponly=True)
-
-        return user
+        return UserSchema.model_validate(user, from_attributes=True)
 
     async def update_user_by_id(
         self, user_id: UUID, new_user: UserUpdateSchema

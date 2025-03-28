@@ -2,6 +2,7 @@ import logging
 
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from shorty.endpoints import routers
@@ -12,6 +13,13 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Shorty")
 
 app.include_router(routers)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(BaseAPIException)
