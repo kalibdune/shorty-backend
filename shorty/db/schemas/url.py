@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Field, field_validator, model_validator
+from pydantic import AnyUrl, BaseModel, Field, field_validator
 
 from shorty.config import config
 
@@ -26,25 +26,22 @@ class UrlSchema(UrlBaseSchema):
 
 class UrlCreateSchema(BaseModel):
     url: AnyUrl
-    user_id: UUID | None
     expiration_time: (
-        Annotated[int, Field(ge=0, description="short url life duration in seconds")]
+        Annotated[
+            datetime,
+            Field(
+                ge=datetime.now(),
+                description="short url life duration in datetime greater or equals current time",
+            ),
+        ]
         | None
     )
 
     @field_validator("expiration_time")
     def parse_expiration_time(cls, value):
-        if isinstance(value, int) and value != 0:
-            return timedelta(seconds=value)
+        if value:
+            return value.replace(tzinfo=None)
         return value
-
-    @model_validator(mode="after")
-    def check_user_id_and_expiration_time(cls, values):
-        if values.user_id is None and values.expiration_time == 0:
-            raise ValueError(
-                "user_id=None and expiration_time=0 could not be at the same time"
-            )
-        return values
 
 
 class UrlUpdateSchema(BaseModel):

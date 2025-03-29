@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from shorty.config import config
 from shorty.db.schemas.url import UrlCreateSchema, UrlInDB, UrlSchema, UrlUpdateSchema
+from shorty.db.schemas.user import UserSchema
 from shorty.repositories.url import UrlRepository
 from shorty.services.user import UserService
 from shorty.utils.exceptions import GoneError, InsufficientStorage, NotFoundError
@@ -74,20 +75,18 @@ class UrlService:
         updated_url = UrlInDB.model_validate(updated_url, from_attributes=True)
         return await self._repository.update_by_id(url_id, updated_url.model_dump())
 
-    async def create_url(self, url: UrlCreateSchema) -> UrlSchema:
+    async def create_url(
+        self, url: UrlCreateSchema, user: UserSchema | None
+    ) -> UrlSchema:
         if await self._get_reserved_url_count() >= config.app.get_combinations_count:
             raise InsufficientStorage("cannot allocate new hash at this time")
 
-        user_service = UserService(self._session)
-
-        if not url.user_id:
+        if not user:
             exp = datetime.now() + timedelta(seconds=config.app.temporary_url_lifetime)
-        elif url.expiration_time == 0:
+        elif not url.expiration_time:
             exp = None
-            await user_service.get_user_by_id(url.user_id)
         else:
-            exp = datetime.now() + url.expiration_time
-            await user_service.get_user_by_id(url.user_id)
+            exp = url.expiration_time
 
         hash_dto = await self._generate_available_hash()
 
@@ -100,7 +99,7 @@ class UrlService:
             url=str(url.url),
             hash=hash_dto.url_hash,
             expired_at=exp,
-            user_id=url.user_id,
+            user_id=user.id if user else None,
         )
 
         url = await self._repository.create(url.model_dump())

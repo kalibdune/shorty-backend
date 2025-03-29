@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any, Awaitable
 
 from fastapi import Depends, Path, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -26,4 +26,14 @@ async def check_auth(request: Request, session=Depends(get_session)) -> UserSche
     return await AuthService(session).validate_token(access_token, TokenType.access)
 
 
+async def res_check_auth(
+    request: Request, session=Depends(get_session)
+) -> UserSchema | None:
+    try:
+        return await check_auth(request, session)
+    except:
+        return None
+
+
 OAuth = Annotated[UserSchema, Depends(check_auth)]
+UnstrictedOAuth = Annotated[UserSchema | None, Depends(res_check_auth)]

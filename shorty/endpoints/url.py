@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse
 
 from shorty.db.schemas.url import UrlCreateSchema, UrlSchema
-from shorty.endpoints.dependencies import HashType, OAuth, get_session
+from shorty.endpoints.dependencies import HashType, OAuth, UnstrictedOAuth, get_session
 from shorty.services.url import UrlService
 
 router = APIRouter(prefix="/url")
@@ -15,9 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=UrlSchema, status_code=status.HTTP_201_CREATED)
-async def create_short_url(data: UrlCreateSchema, session=Depends(get_session)):
+async def create_short_url(
+    data: UrlCreateSchema, user: UnstrictedOAuth, session=Depends(get_session)
+):
     url_service = UrlService(session)
-    return await url_service.create_url(data)
+    return await url_service.create_url(data, user)
 
 
 @router.get(
