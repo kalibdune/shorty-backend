@@ -11,7 +11,12 @@ from shorty.db.schemas.url import UrlCreateSchema, UrlInDB, UrlSchema, UrlUpdate
 from shorty.db.schemas.user import UserSchema
 from shorty.repositories.url import UrlRepository
 from shorty.services.user import UserService
-from shorty.utils.exceptions import GoneError, InsufficientStorage, NotFoundError
+from shorty.utils.exceptions import (
+    BadRequestError,
+    GoneError,
+    InsufficientStorage,
+    NotFoundError,
+)
 
 
 @dataclass
@@ -81,24 +86,20 @@ class UrlService:
         if await self._get_reserved_url_count() >= config.app.get_combinations_count:
             raise InsufficientStorage("cannot allocate new hash at this time")
 
-        if not user:
-            exp = datetime.now() + timedelta(seconds=config.app.temporary_url_lifetime)
-        elif not url.expiration_time:
-            exp = None
-        else:
-            exp = url.expiration_time
+        if not user and not url.expiration_time:
+            raise BadRequestError("cannot create unlimited time without provided user")
 
         hash_dto = await self._generate_available_hash()
 
         if not hash_dto.isunique:
             updated_url = UrlUpdateSchema.model_validate(url, from_attributes=True)
-            updated_url.expired_at = exp
+            updated_url.expired_at = url.expiration_time
             return await self.update_url_by_id(hash_dto.existing_url_id, updated_url)
 
         url = UrlInDB(
             url=str(url.url),
             hash=hash_dto.url_hash,
-            expired_at=exp,
+            expired_at=url.expiration_time,
             user_id=user.id if user else None,
         )
 
