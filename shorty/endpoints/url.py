@@ -47,7 +47,7 @@ async def get_hash_url(
 
 
 @hash_router.get(
-    "/{hash}/", response_model=UrlSchema, status_code=status.HTTP_307_TEMPORARY_REDIRECT
+    "/{hash}/", response_model=None, status_code=status.HTTP_307_TEMPORARY_REDIRECT
 )
 async def redirect_on_url(
     hash: HashType,
