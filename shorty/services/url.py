@@ -83,11 +83,21 @@ class UrlService:
     async def create_url(
         self, url: UrlCreateSchema, user: UserSchema | None
     ) -> UrlSchema:
-        if await self._get_reserved_url_count() >= config.app.get_combinations_count:
-            raise InsufficientStorage("cannot allocate new hash at this time")
-
         if not user and not url.expiration_time:
             raise BadRequestError("cannot create unlimited time without provided user")
+
+        if (
+            not user
+            and url.expiration_time
+            and url.expiration_time
+            > datetime.now() + timedelta(seconds=config.app.temporary_url_lifetime)
+        ):
+            raise BadRequestError(
+                "cannot create url with expiration time above than temporary_url_lifetime"
+            )
+
+        if await self._get_reserved_url_count() >= config.app.get_combinations_count:
+            raise InsufficientStorage("cannot allocate new hash at this time")
 
         hash_dto = await self._generate_available_hash()
 
