@@ -39,3 +39,12 @@ class AuthRepository(SQLAlchemyRepository):
         await self._session.execute(stmt2)
         await self._session.commit()
         return count
+
+    async def revoke_refresh_token_by_token(self, token: str) -> None:
+        stmt = (
+            update(self.model)
+            .where(self.model.refresh_token == token)
+            .values(revoked=True)
+        )
+        await self._session.execute(stmt)
+        await self._session.commit()

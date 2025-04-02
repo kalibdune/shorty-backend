@@ -29,6 +29,12 @@ class AuthService(metaclass=SingletonMeta):
         self._session = session
         self._repository = AuthRepository(self._session)
 
+    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+        return self._context.verify(plain_password, hashed_password)
+
+    def get_hash_password(self, plain_password: str) -> str:
+        return self._context.hash(plain_password)
+
     def _emit_new_token(
         self, username: str, token_type: TokenType, exp: datetime | None = None
     ) -> str:
@@ -52,12 +58,17 @@ class AuthService(metaclass=SingletonMeta):
         )
         return encoded_jwt
 
+    def emit_access_token(self, username: str) -> str:
+        return self._emit_new_token(username, TokenType.access.value)
+
+    async def revoke_refresh_token(self, token: str) -> None:
+        if not await self._repository.get_by_token(token):
+            raise NotFoundError("refresh token not foud")
+        await self._repository.revoke_refresh_token_by_token(token)
+
     async def revoke_tokens_by_user_id(self, user: UserSchema) -> RevokedTokensSchema:
         count = await self._repository.revoke_tokens_by_user_id(user.id)
         return RevokedTokensSchema(revoked_count=count)
-
-    def emit_access_token(self, username: str) -> str:
-        return self._emit_new_token(username, TokenType.access.value)
 
     async def emit_refresh_token(self, username: str, user_id: UUID) -> str:
         exp = datetime.now() + timedelta(seconds=config.app.refresh_token_expire)
@@ -115,11 +126,7 @@ class AuthService(metaclass=SingletonMeta):
 
         return TokensSchema(access_token=access_token, refresh_token=refresh_token)
 
-    async def validate_token(
-        self, token: str | None, token_type: TokenType
-    ) -> UserSchema:
-        if not token:
-            raise UnauthorizedError("token not provided")
+    async def validate_token(self, token: str, token_type: TokenType) -> UserSchema:
         try:
             payload = jwt.decode(
                 token, config.app.secret_key, algorithms=[config.app.hash_algorithm]
@@ -139,9 +146,3 @@ class AuthService(metaclass=SingletonMeta):
         if not user:
             raise NotFoundError(f"user not found with email: {username}")
         return UserSchema.model_validate(user, from_attributes=True)
-
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return self._context.verify(plain_password, hashed_password)
-
-    def get_hash_password(self, plain_password: str) -> str:
-        return self._context.hash(plain_password)

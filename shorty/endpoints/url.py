@@ -22,8 +22,18 @@ async def create_short_url(
     return await url_service.create_url(data, user)
 
 
+@router.get("/{hash}/", response_model=UrlSchema, status_code=status.HTTP_200_OK)
+async def get_hash_url(
+    hash: HashType,
+    auth: OAuth,
+    session=Depends(get_session),
+):
+    url_service = UrlService(session)
+    return await url_service.get_url_by_hash(hash)
+
+
 @router.get(
-    "/{user_id}/", response_model=list[UrlSchema], status_code=status.HTTP_200_OK
+    "/user/{user_id}/", response_model=list[UrlSchema], status_code=status.HTTP_200_OK
 )
 async def get_urls_by_user(
     user_id: UUID,
@@ -34,16 +44,6 @@ async def get_urls_by_user(
 ):
     url_service = UrlService(session)
     return await url_service.get_paginated_urls_by_user(user_id, page, size)
-
-
-@router.get("/{hash}/", response_model=UrlSchema, status_code=status.HTTP_200_OK)
-async def get_hash_url(
-    hash: HashType,
-    auth: OAuth,
-    session=Depends(get_session),
-):
-    url_service = UrlService(session)
-    return await url_service.get_url_by_hash(hash)
 
 
 @hash_router.get(

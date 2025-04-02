@@ -47,9 +47,23 @@ async def refresh_tokens(
     response.set_cookie("access_token", token, httponly=True, samesite="strict")
 
 
-@router.post(
+@router.delete(
     "/revoke/", response_model=RevokedTokensSchema, status_code=status.HTTP_201_CREATED
 )
 async def revoke_tokens(user: OAuth, session=Depends(get_session)):
     auth_service = AuthService(session)
     return await auth_service.revoke_tokens_by_user_id(user)
+
+
+@router.delete("/logout/", response_model=None, status_code=status.HTTP_200_OK)
+async def logout_and_delete_tokens(
+    auth: OAuth, response: Response, request: Request, session=Depends(get_session)
+):
+    auth_service = AuthService(session)
+
+    refresh_token = request.cookies.get("refresh_token")
+
+    response.delete_cookie("access_token", httponly=True, samesite="strict")
+    response.delete_cookie("refresh_token", httponly=True, samesite="strict")
+
+    await auth_service.revoke_refresh_token(refresh_token)
