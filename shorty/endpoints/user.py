@@ -23,8 +23,8 @@ async def create_user(
 
     user = await user_service.create_user(data)
 
-    access_token = auth_service.emit_access_token(user.name)
-    refresh_token = await auth_service.emit_refresh_token(user.name, user.id)
+    access_token = auth_service.emit_access_token(user.email)
+    refresh_token = await auth_service.emit_refresh_token(user.email, user.id)
 
     response.set_cookie("access_token", access_token, httponly=True)
     response.set_cookie("refresh_token", refresh_token, httponly=True)
