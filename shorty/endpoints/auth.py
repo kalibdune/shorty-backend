@@ -5,22 +5,29 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from shorty.db.schemas.auth import RevokedTokensSchema
+from shorty.db.schemas.user import UserSchema
 from shorty.endpoints.dependencies import OAuth, get_session
 from shorty.services.auth import AuthService
+from shorty.services.user import UserService
 
 router = APIRouter(prefix="/token")
 
 logger = logging.getLogger(__name__)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserSchema)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     resp: Response,
     session=Depends(get_session),
 ):
     auth_service = AuthService(session)
+    user_service = UserService(session)
+
+    user = await user_service.get_user_by_email(form_data.username)
+    
     tokens = await auth_service.create_tokens(form_data.username, form_data.password)
+    
     resp.set_cookie(
         "access_token", tokens.access_token, httponly=True, samesite="strict"
     )
@@ -31,6 +38,8 @@ async def login_for_access_token(
         samesite="strict",
         expires=None,
     )
+
+    return user
 
 
 @router.post("/refresh/", status_code=status.HTTP_201_CREATED)
