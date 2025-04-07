@@ -12,10 +12,10 @@ from shorty.db.schemas.user import UserSchema
 from shorty.repositories.url import UrlRepository
 from shorty.services.user import UserService
 from shorty.utils.exceptions import (
-    BadRequestError,
     GoneError,
     InsufficientStorage,
     NotFoundError,
+    UserNotAuthorised,
 )
 
 
@@ -84,7 +84,9 @@ class UrlService:
         self, url: UrlCreateSchema, user: UserSchema | None
     ) -> UrlSchema:
         if not user and not url.expiration_time:
-            raise BadRequestError("cannot create unlimited time without provided user")
+            raise UserNotAuthorised(
+                "cannot create unlimited time without provided user"
+            )
 
         if (
             not user
@@ -92,7 +94,7 @@ class UrlService:
             and url.expiration_time
             > datetime.now() + timedelta(seconds=config.app.temporary_url_lifetime)
         ):
-            raise BadRequestError(
+            raise UserNotAuthorised(
                 "cannot create url with expiration time above than temporary_url_lifetime"
             )
 

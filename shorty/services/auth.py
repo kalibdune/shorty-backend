@@ -100,7 +100,6 @@ class AuthService(metaclass=SingletonMeta):
             raise NotFoundError("token not found in cookies")
 
         await self.validate_token(refresh_token, TokenType.refresh)
-        await self.get_token_object_by_token(refresh_token)
 
         data = await self.get_token_object_by_token(refresh_token)
 
