@@ -13,7 +13,7 @@ class User(Base, TimeStampMixin):
     __tablename__ = "usr"
 
     name: Mapped[str] = mapped_column(nullable=False)
-    password: Mapped[str] = mapped_column(nullable=False, unique=True)
+    password: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
 
     urls: Mapped[list["Url"]] = relationship(back_populates="user")
