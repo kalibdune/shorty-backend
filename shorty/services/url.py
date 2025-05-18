@@ -7,7 +7,13 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shorty.config import config
-from shorty.db.schemas.url import UrlCreateSchema, UrlInDB, UrlSchema, UrlUpdateSchema
+from shorty.db.schemas.url import (
+    UrlCreateSchema,
+    UrlInDB,
+    UrlPaginatedSchema,
+    UrlSchema,
+    UrlUpdateSchema,
+)
 from shorty.db.schemas.user import UserSchema
 from shorty.repositories.url import UrlRepository
 from shorty.services.user import UserService
@@ -60,14 +66,20 @@ class UrlService:
 
     async def get_paginated_urls_by_user(
         self, user_id: UUID, page: int, size: int
-    ) -> list[UrlSchema]:
+    ) -> UrlPaginatedSchema:
         user_service = UserService(self._session)
         await user_service.get_user_by_id(user_id)
 
-        urls = await self._repository.get_paginated(user_id, page, size)
+        res = await self._repository.get_paginated(user_id, page, size)
+        count, urls = res[0], res[1]
         if urls:
-            return [UrlSchema.model_validate(url, from_attributes=True) for url in urls]
-        return []
+            return UrlPaginatedSchema(
+                urls=[
+                    UrlSchema.model_validate(url, from_attributes=True) for url in urls
+                ],
+                total_count=count,
+            )
+        return UrlPaginatedSchema(urls=[], total_count=count)
 
     async def _get_reserved_url_count(self) -> int:
         return await self._repository.get_reserved_count()

@@ -24,6 +24,11 @@ class UrlSchema(UrlBaseSchema):
     updated_at: datetime
 
 
+class UrlPaginatedSchema(BaseModel):
+    urls: list[UrlSchema]
+    total_count: int
+
+
 class UrlCreateSchema(BaseModel):
     url: AnyUrl
     expiration_time: (

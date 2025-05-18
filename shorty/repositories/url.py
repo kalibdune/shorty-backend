@@ -28,13 +28,19 @@ class UrlRepository(SQLAlchemyRepository):
 
     async def get_paginated(
         self, user_id: UUID, page: int, size: int
-    ) -> list[Url] | None:
-        stmt = (
+    ) -> tuple[int, list[Url]] | tuple[int, None]:
+        stmt1 = (
             select(self.model)
             .where(self.model.user_id == user_id)
             .order_by(desc(self.model.updated_at))
             .offset((page - 1) * size)
             .limit(size)
         )
-        result = await self._session.scalars(stmt)
-        return result.all() if result else None
+        stmt2 = (
+            select(func.count())
+            .select_from(self.model)
+            .where(self.model.user_id == user_id)
+        )
+        result = await self._session.scalars(stmt1)
+        count = await self._session.scalar(stmt2)
+        return count, result.all() if result else count, None

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse
 
-from shorty.db.schemas.url import UrlCreateSchema, UrlSchema
+from shorty.db.schemas.url import UrlCreateSchema, UrlPaginatedSchema, UrlSchema
 from shorty.endpoints.dependencies import HashType, OAuth, UnstrictedOAuth, get_session
 from shorty.services.url import UrlService
 
@@ -33,7 +33,9 @@ async def get_hash_url(
 
 
 @router.get(
-    "/user/{user_id}/", response_model=list[UrlSchema], status_code=status.HTTP_200_OK
+    "/user/{user_id}/",
+    response_model=UrlPaginatedSchema,
+    status_code=status.HTTP_200_OK,
 )
 async def get_urls_by_user(
     user_id: UUID,
