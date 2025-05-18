@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager, contextmanager
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, Literal
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -41,10 +41,17 @@ class SessionManager:
             )
 
     @asynccontextmanager
-    async def session(self) -> AsyncGenerator[AsyncSession, None]:
+    async def session(
+        self,
+        isolation_level: Literal[
+            "REPEATABLE READ", "READ COMMITTED"
+        ] = "READ COMMITTED",
+    ) -> AsyncGenerator[AsyncSession, None]:
         if not self.is_async:
             raise Exception("you are using async context manager via sync engine")
         session: AsyncSession = self._session_factory()
+        await session.connection(execution_options={"isolation_level": isolation_level})
+
         try:
             yield session
         except Exception as e:
@@ -56,10 +63,17 @@ class SessionManager:
             await session.close()
 
     @contextmanager
-    def sync_session(self) -> Generator[Session, None, None]:
+    def sync_session(
+        self,
+        isolation_level: Literal[
+            "REPEATABLE READ", "READ COMMITTED"
+        ] = "READ COMMITTED",
+    ) -> Generator[Session, None, None]:
         if self.is_async:
             raise Exception("you are using sync context manager via async engine")
         session = self._session_factory()
+        session.connection(execution_options={"isolation_level": isolation_level})
+
         try:
             yield session
         except Exception as e:

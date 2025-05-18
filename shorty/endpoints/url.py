@@ -5,7 +5,13 @@ from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse
 
 from shorty.db.schemas.url import UrlCreateSchema, UrlPaginatedSchema, UrlSchema
-from shorty.endpoints.dependencies import HashType, OAuth, UnstrictedOAuth, get_session
+from shorty.endpoints.dependencies import (
+    HashType,
+    OAuth,
+    UnstrictedOAuth,
+    get_session,
+    get_session_repeatable_read,
+)
 from shorty.services.url import UrlService
 
 router = APIRouter(prefix="/url")
@@ -42,7 +48,7 @@ async def get_urls_by_user(
     auth: OAuth,
     page: int = Query(1, ge=1),
     size: int = Query(10, ge=1, le=100),
-    session=Depends(get_session),
+    session=Depends(get_session_repeatable_read),
 ):
     url_service = UrlService(session)
     return await url_service.get_paginated_urls_by_user(user_id, page, size)

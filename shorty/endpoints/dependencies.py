@@ -21,6 +21,11 @@ async def get_session():
         yield session
 
 
+async def get_session_repeatable_read():
+    async with session_manager.session(isolation_level="REPEATABLE READ") as session:
+        yield session
+
+
 async def check_auth(request: Request, session=Depends(get_session)) -> UserSchema:
     access_token = request.cookies.get("access_token")
     if not access_token:
