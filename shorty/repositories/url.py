@@ -43,4 +43,4 @@ class UrlRepository(SQLAlchemyRepository):
         )
         result = await self._session.scalars(stmt1)
         count = await self._session.scalar(stmt2)
-        return count, result.all() if result else count, None
+        return count, result.all()

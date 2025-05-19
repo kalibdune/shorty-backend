@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from shorty.db.models.base import Base, TimeStampMixin
 
 if TYPE_CHECKING:
+    from shorty.db.models.url_redirect import UrlRedirect
     from shorty.db.models.user import User
 
 
@@ -27,6 +28,10 @@ class Url(Base, TimeStampMixin):
     user: Mapped["User"] = relationship(
         "User",
         back_populates="urls",
+    )
+
+    url_redirects: Mapped[list["UrlRedirect"]] = relationship(
+        "UrlRedirect", back_populates="url"
     )
 
     def __repr__(self) -> str:

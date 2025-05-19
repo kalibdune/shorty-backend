@@ -5,6 +5,11 @@ from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse
 
 from shorty.db.schemas.url import UrlCreateSchema, UrlPaginatedSchema, UrlSchema
+from shorty.db.schemas.url_redirect import (
+    UrlRedirectCreateSchema,
+    UrlRedirectRequestSchema,
+    UrlRedirectStatisticSchema,
+)
 from shorty.endpoints.dependencies import (
     HashType,
     OAuth,
@@ -13,6 +18,7 @@ from shorty.endpoints.dependencies import (
     get_session_repeatable_read,
 )
 from shorty.services.url import UrlService
+from shorty.services.url_redirect import UrlRedirectService
 
 router = APIRouter(prefix="/url")
 hash_router = APIRouter()
@@ -35,6 +41,13 @@ async def get_hash_url(
     session=Depends(get_session),
 ):
     url_service = UrlService(session)
+    url_redirect_service = UrlRedirectService(session)
+
+    url = await url_service.get_url_by_hash(hash)
+    await url_redirect_service.create_redirection(
+        UrlRedirectCreateSchema(url_id=url.id)
+    )
+
     return await url_service.get_url_by_hash(hash)
 
 
@@ -62,5 +75,26 @@ async def redirect_on_url(
     session=Depends(get_session),
 ):
     url_service = UrlService(session)
+    url_redirect_service = UrlRedirectService(session)
+
     url = await url_service.get_url_by_hash(hash)
+    await url_redirect_service.create_redirection(
+        UrlRedirectCreateSchema(url_id=url.id)
+    )
+
     return RedirectResponse(url.url)
+
+
+@router.post(
+    "/statistic/{url_id}",
+    response_model=UrlRedirectStatisticSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def get_statistic_by_url(
+    url_id: UUID,
+    data: UrlRedirectRequestSchema,
+    auth: OAuth,
+    session=Depends(get_session_repeatable_read),
+):
+    url_redirect_service = UrlRedirectService(session)
+    return await url_redirect_service.get_redirects_by_url_id(url_id, data)
