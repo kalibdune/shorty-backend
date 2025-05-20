@@ -4,7 +4,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse
 
-from shorty.db.schemas.url import UrlCreateSchema, UrlPaginatedSchema, UrlSchema
+from shorty.db.schemas.url import (
+    UrlCreateSchema,
+    UrlPaginatedSchema,
+    UrlSchema,
+    UrlUpdateSchema,
+)
 from shorty.db.schemas.url_redirect import (
     UrlRedirectCreateSchema,
     UrlRedirectRequestSchema,
@@ -98,3 +103,11 @@ async def get_statistic_by_url(
 ):
     url_redirect_service = UrlRedirectService(session)
     return await url_redirect_service.get_redirects_by_url_id(url_id, data)
+
+
+@router.patch("/{url_id}/", response_model=UrlSchema, status_code=status.HTTP_200_OK)
+async def update_url_by_id(
+    url_id: UUID, data: UrlUpdateSchema, auth: OAuth, session=Depends(get_session)
+):
+    url_service = UrlService(session)
+    return await url_service.update_url_by_id(url_id, data)

@@ -51,6 +51,4 @@ class UrlCreateSchema(BaseModel):
 
 class UrlUpdateSchema(BaseModel):
     url: AnyUrl | None = None
-    user_id: UUID | None = None
-    hash: str | None = None
     expired_at: datetime | None = None
