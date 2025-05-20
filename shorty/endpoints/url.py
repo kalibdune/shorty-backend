@@ -105,7 +105,7 @@ async def get_statistic_by_url(
     return await url_redirect_service.get_redirects_by_url_id(url_id, data)
 
 
-@router.patch("/{url_id}/", response_model=UrlSchema, status_code=status.HTTP_200_OK)
+@router.put("/{url_id}/", response_model=UrlSchema, status_code=status.HTTP_200_OK)
 async def update_url_by_id(
     url_id: UUID, data: UrlUpdateSchema, auth: OAuth, session=Depends(get_session)
 ):

@@ -88,7 +88,7 @@ class UrlService:
         self, url_id: UUID, new_url: UrlUpdateSchema
     ) -> UrlSchema:
         url = await self.get_url_by_id(url_id)
-        updated_url = url.model_copy(update=new_url.model_dump(exclude_unset=True))
+        updated_url = url.model_copy(update=new_url.model_dump())
         updated_url_dict = updated_url.model_dump()
         updated_url_dict["url"] = str(updated_url_dict["url"])
         updated_url = UrlInDB.model_validate(updated_url_dict)

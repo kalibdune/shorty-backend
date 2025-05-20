@@ -50,5 +50,11 @@ class UrlCreateSchema(BaseModel):
 
 
 class UrlUpdateSchema(BaseModel):
-    url: AnyUrl | None = None
-    expired_at: datetime | None = None
+    url: AnyUrl
+    expired_at: datetime | None
+
+    @field_validator("expired_at")
+    def parse_expiration_time(cls, value):
+        if value:
+            return value.replace(tzinfo=None)
+        return value
