@@ -141,3 +141,7 @@ class UrlService:
                 f"url hash has been expired, id: {url.id}, hash: {url.hash}"
             )
         return UrlSchema.model_validate(url, from_attributes=True)
+
+    async def delete_url_by_id(self, url_id: UUID) -> None:
+        await self.get_url_by_id(url_id)
+        await self._repository.delete_by_id(url_id)

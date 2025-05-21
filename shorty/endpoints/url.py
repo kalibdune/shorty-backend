@@ -111,3 +111,9 @@ async def update_url_by_id(
 ):
     url_service = UrlService(session)
     return await url_service.update_url_by_id(url_id, data)
+
+
+@router.delete("/{url_id}/", response_model=None, status_code=status.HTTP_200_OK)
+async def delete_url_by_id(url_id: UUID, auth: OAuth, session=Depends(get_session)):
+    url_service = UrlService(session)
+    await url_service.delete_url_by_id(url_id)

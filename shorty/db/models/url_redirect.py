@@ -14,7 +14,7 @@ class UrlRedirect(Base, TimeStampMixin):
     __tablename__ = "url_redirect"
 
     url_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("url.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("url.id", ondelete="CASCADE"), nullable=False
     )
 
     url: Mapped["Url"] = relationship("Url", back_populates="url_redirects")
