@@ -59,3 +59,7 @@ Once the application is running, you can access it at `http://localhost:8000`. U
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+Links:
+- [Frontend repository](https://github.com/kalibdune/shorty-frontend)
+- [Base repository](https://github.com/kalibdune/shorty)
