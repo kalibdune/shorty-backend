@@ -7,11 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 class BaseAPIException(HTTPException):
-    status_code: status
+    status_code: int
     error: str
 
     def __init__(self, detail: str) -> None:
         self.detail = detail
+        super().__init__(status_code=self.status_code, detail=detail)
 
     def __repr__(self) -> str:
         return f"Error: {self.error}, status: {self.status_code}, detail: {self.detail}"

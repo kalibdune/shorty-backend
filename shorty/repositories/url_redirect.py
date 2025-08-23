@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shorty.db.models.url_redirect import UrlRedirect
@@ -24,14 +24,6 @@ class UrlRedirectRepository(SQLAlchemyRepository):
             .where(self.model.created_at >= started_at)
             .order_by(desc(self.model.created_at))
         )
-        stmt2 = (
-            select(func.count())
-            .select_from(self.model)
-            .where(self.model.url_id == url_id)
-            .where(self.model.created_at <= ended_at)
-            .where(self.model.created_at >= started_at)
-        )
-        result = await self._session.scalars(stmt1)
-        count = await self._session.scalar(stmt2)
+        result = (await self._session.scalars(stmt1)).all()
 
-        return count, result.all()
+        return len(result), result

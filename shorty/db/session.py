@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class SessionManager:
-
     def __init__(self, db_dsn: str, echo: bool = False, is_async=True):
         self.is_async = is_async
         if is_async:
@@ -43,14 +42,10 @@ class SessionManager:
     @asynccontextmanager
     async def session(
         self,
-        isolation_level: Literal[
-            "REPEATABLE READ", "READ COMMITTED"
-        ] = "READ COMMITTED",
     ) -> AsyncGenerator[AsyncSession, None]:
         if not self.is_async:
             raise Exception("you are using async context manager via sync engine")
         session: AsyncSession = self._session_factory()
-        await session.connection(execution_options={"isolation_level": isolation_level})
 
         try:
             yield session
@@ -65,14 +60,10 @@ class SessionManager:
     @contextmanager
     def sync_session(
         self,
-        isolation_level: Literal[
-            "REPEATABLE READ", "READ COMMITTED"
-        ] = "READ COMMITTED",
     ) -> Generator[Session, None, None]:
         if self.is_async:
             raise Exception("you are using sync context manager via async engine")
         session = self._session_factory()
-        session.connection(execution_options={"isolation_level": isolation_level})
 
         try:
             yield session
